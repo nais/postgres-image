@@ -41,6 +41,10 @@ jobs:
           name: postgres-image
           context: postgres-appliance
           dockerfile: postgres-appliance/Dockerfile
+          build_args: |
+            ADDITIONAL_LOCALES=nb_NO
+            TIMESCALEDB_APACHE_ONLY=false
+            TIMESCALEDB_TOOLKIT=false
           google_service_account: gh-postgres-image
           push: ${{ github.actor != 'dependabot[bot]' }}
           workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
