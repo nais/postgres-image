@@ -1,0 +1,10 @@
+dependencies:
+  - allOf:
+      - naiserator
+environmentKinds:
+  - tenant
+values:
+  image.tag:
+    displayName: Image tag
+    config:
+      type: string

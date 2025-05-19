@@ -1,0 +1,7 @@
+apiVersion: v2
+name: postgres-image
+description: Providing postgres-image configuration for naiserator
+type: application
+version: invalid
+sources:
+  - https://github.com/nais/postgres-image/tree/main/charts
