@@ -39,6 +39,7 @@ jobs:
         id: build-push-sign
         with:
           name: postgres-image
+          context: postgres-appliance
           dockerfile: postgres-appliance/Dockerfile
           google_service_account: gh-postgres-image
           push: ${{ github.actor != 'dependabot[bot]' }}
