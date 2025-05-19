@@ -1,0 +1,17 @@
+{{/*
+This file just updates the ServiceAccount created in 04-rbac.yaml, with new hook-delete-policy,
+which will ensure that Helm deletes the ServiceAccount when the test is done.
+*/}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "postgres-image.testname" . }}
+  namespace: nais-verification
+  labels:
+    {{- include "postgres-image.labels" . | nindent 4 }}
+    app: app
+  annotations:
+    helm.sh/hook: post-install,post-upgrade,test
+    helm.sh/hook-weight: "7"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-failed,hook-succeeded

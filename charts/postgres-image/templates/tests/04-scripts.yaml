@@ -1,0 +1,56 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "postgres-image.testname" . }}-scripts
+  namespace: nais-verification
+  labels:
+    {{- include "postgres-image.labels" . | nindent 4 }}
+    app: app
+  annotations:
+    helm.sh/hook: post-install,post-upgrade,test
+    helm.sh/hook-weight: "4"
+    helm.sh/hook-delete-policy: before-hook-creation
+data:
+  test.sh: |
+    #!/usr/bin/env bash
+
+    set -euo pipefail
+
+    echo "Polling for PostgreSQL to be ready..."
+    timeout 5m bash -c 'until psql -c "SELECT 1"; do sleep 30; done'
+
+    echo "Creating test table"
+    psql -c "CREATE TABLE test (last_update varchar(50));"
+    echo "Inserting test data"
+    psql -c "INSERT INTO test (last_update) VALUES ('$(date +%Y-%m-%dT%H:%M:%S)');"
+    echo "Verifying test data"
+    psql -c "SELECT * FROM test;"
+    echo "Test completed successfully"
+
+  cleanup.sh: |
+    #!/usr/bin/env bash
+
+    echo "Starting cleanup at $(date +%Y-%m-%dT%H:%M:%S)"
+    kubectl delete -n pg-nais-verification postgresql.acid.zalan.do/{{ include "postgres-image.testname" . }}
+    {{- if not (get .Values "postgres-image").configKubernetes.enable_finalizers }}
+    echo "Give operator some time to do its clean up"
+    sleep 30
+    {{- end }}
+
+    script=$(mktemp)
+    kubectl get svc,pod,ep,cm,endpointslice,pdb,fqdnnetworkpolicy,netpol,secret,pvc,sts,postgresql -n pg-nais-verification | grep {{ include "postgres-image.testname" . }} | awk '{print "kubectl delete -n pg-nais-verification " $1}' >> "${script}"
+    kubectl get job,pod,cm,fqdnnetworkpolicy,netpol,secret -n nais-verification | grep {{ include "postgres-image.testname" . }} | grep -v cleanup | awk '{print "kubectl delete -n nais-verification " $1}' >> "${script}"
+    chmod +x "${script}"
+    echo "Running cleanup script"
+    cat "${script}"
+    "${script}"
+    rm -f "${script}"
+    echo "Deleting iampolicy"
+    kubectl delete iampolicy -n serviceaccounts {{ include "postgres-image.testname" . }}
+    echo "Cleaning up rolebindings"
+    kubectl delete rolebinding -n pg-nais-verification {{ include "postgres-image.testname" . }}
+    kubectl delete rolebinding -n nais-verification {{ include "postgres-image.testname" . }}
+    kubectl delete rolebinding -n serviceaccounts {{ include "postgres-image.testname" . }}
+
+    echo "Cleanup completed at $(date +%Y-%m-%dT%H:%M:%S)"

@@ -1,10 +1,15 @@
 dependencies:
   - allOf:
       - naiserator
+      - postgres-operator
 environmentKinds:
   - tenant
+timeout: 20m0s
 values:
   image.tag:
     displayName: Image tag
     config:
       type: string
+  project_id:
+    computed:
+      template: "{{ .Env.project_id }}"

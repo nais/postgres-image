@@ -1,0 +1,33 @@
+---
+apiVersion: networking.gke.io/v1alpha3
+kind: FQDNNetworkPolicy
+metadata:
+  name: fqdn-{{ include "postgres-image.testname" . }}
+  namespace: pg-nais-verification
+  labels:
+    {{- include "postgres-image.labels" . | nindent 4 }}
+    app: app
+  annotations:
+    helm.sh/hook: post-install,post-upgrade,test
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  egress:
+  - ports:
+    - port: 80
+      protocol: TCP
+    to:
+    - fqdns:
+      - metadata.google.internal
+  - ports:
+    - port: 443
+      protocol: TCP
+    to:
+    - fqdns:
+      - private.googleapis.com
+  podSelector:
+    matchLabels:
+      application: spilo
+      app: app
+  policyTypes:
+  - Egress

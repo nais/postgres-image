@@ -1,0 +1,75 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "postgres-image.testname" . }}
+  namespace: pg-nais-verification
+  labels:
+    {{- include "postgres-image.labels" . | nindent 4 }}
+    app: app
+  annotations:
+    helm.sh/hook: post-install,post-upgrade,test
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  egress:
+    - to: # Cluster pods
+        - podSelector:
+            matchLabels:
+              application: spilo
+              app: app
+  ingress:
+    - from: # Application pods
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nais-verification
+          podSelector:
+            matchLabels:
+              app: app
+    - from: # Cluster pods
+        - podSelector:
+            matchLabels:
+              application: spilo
+              app: app
+    - from: # Postgres operator
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nais-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgres-operator
+  podSelector:
+    matchLabels:
+      application: spilo
+      app: app
+  policyTypes:
+    - Egress
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pg-{{ include "postgres-image.testname" . }}
+  namespace: nais-verification
+  labels:
+    {{- include "postgres-image.labels" . | nindent 4 }}
+    app: app
+  annotations:
+    helm.sh/hook: post-install,post-upgrade,test
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  egress:
+    - to: # Cluster pods
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: pg-nais-verification
+          podSelector:
+            matchLabels:
+              application: spilo
+              app: app
+  podSelector:
+    matchLabels:
+      app: app
+  policyTypes:
+    - Egress

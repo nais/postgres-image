@@ -1,0 +1,36 @@
+---
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: {{ include "postgres-image.testname" . }}
+  namespace: pg-nais-verification
+  labels:
+    {{- include "postgres-image.labels" . | nindent 4 }}
+    apiserver-access: enabled
+    app: app
+  annotations:
+    helm.sh/hook: post-install,post-upgrade,test
+    helm.sh/hook-weight: "2"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  teamId: "nais-verification"
+  dockerImage: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+  volume:
+    size: "10Gi"
+    storageClass: "premium-rwo"
+  numberOfInstances: 2
+  patroni:
+    synchronous_mode: true
+    synchronous_mode_strict: true
+  preparedDatabases:
+    app:
+      defaultUsers: true
+      secretNamespace: nais-verification
+  resources:
+    limits:
+      memory: "4Gi"
+    requests:
+      cpu: "100m"
+      memory: "4Gi"
+  postgresql:
+    version: "17"

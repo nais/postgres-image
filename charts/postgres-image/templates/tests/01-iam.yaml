@@ -1,0 +1,22 @@
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicy
+metadata:
+  name: {{ include "postgres-image.testname" . }}
+  namespace: serviceaccounts
+  labels:
+    {{- include "postgres-image.labels" . | nindent 4 }}
+    app: app
+  annotations:
+    helm.sh/hook: post-install,post-upgrade,test
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  bindings:
+    - members:
+        - serviceAccount:{{ .Values.project_id }}.svc.id.goog[pg-nais-verification/postgres-pod]
+      role: roles/iam.workloadIdentityUser
+  resourceRef:
+    apiVersion: iam.cnrm.cloud.google.com/v1beta1
+    kind: IAMServiceAccount
+    name: postgres-pod

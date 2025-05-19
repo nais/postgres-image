@@ -24,6 +24,13 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{/*
+Create a name for the test hooks.
+*/}}
+{{- define "postgres-image.testname" -}}
+{{- printf "%s-%s" "test" (include "postgres-image.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "postgres-image.chart" -}}

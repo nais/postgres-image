@@ -1,0 +1,74 @@
+{{/*
+This job is used to clean up the test environment after the tests have been run.
+Once done, the only remaining test artifact will be the service account the job uses.
+That service account is cleaned up in 07-cleanup-sa.yaml.
+*/}}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "postgres-image.testname" . }}-cleanup
+  namespace: nais-verification
+  labels:
+    {{- include "postgres-image.labels" . | nindent 4 }}
+    app: app
+  annotations:
+    helm.sh/hook: post-install,post-upgrade,test
+    helm.sh/hook-weight: "6"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
+spec:
+  template:
+    metadata:
+      name: {{ include "postgres-image.testname" . }}
+      namespace: nais-verification
+      labels:
+        {{- include "postgres-image.labels" . | nindent 8 }}
+        app: app
+        apiserver-access: enabled
+    spec:
+      containers:
+        - command:
+            - bash
+            - /var/run/scripts/cleanup.sh
+          image: europe-north1-docker.pkg.dev/nais-io/nais/images/kafka-debug:2025-01-22-132723-a7c7314
+          name: {{ include "postgres-image.testname" . }}
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1069
+            runAsNonRoot: true
+            runAsUser: 1069
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - mountPath: /var/run/scripts
+              name: {{ include "postgres-image.testname" . }}-scripts
+              readOnly: true
+            - mountPath: /tmp
+              name: tmp
+              readOnly: false
+      restartPolicy: Never
+      securityContext:
+        fsGroup: 1069
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: {{ include "postgres-image.testname" . }}
+      volumes:
+        - configMap:
+            name: {{ include "postgres-image.testname" . }}-scripts
+          name: {{ include "postgres-image.testname" . }}-scripts
+        - emptyDir: {}
+          name: tmp
+  backoffLimit: 4
