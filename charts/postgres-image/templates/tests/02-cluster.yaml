@@ -12,6 +12,7 @@ metadata:
     helm.sh/hook: post-install,post-upgrade,test
     helm.sh/hook-weight: "2"
     helm.sh/hook-delete-policy: before-hook-creation
+    nais.io/postgresqlDeleteResource: {{ include "postgres-image.testname" . }}
 spec:
   teamId: "nais-verification"
   dockerImage: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
