@@ -33,6 +33,8 @@ data:
 
     echo "Starting cleanup at $(date +%Y-%m-%dT%H:%M:%S)"
     kubectl delete -n pg-nais-verification postgresql.acid.zalan.do/{{ include "postgres-image.testname" . }}
+    echo "Give operator some time to do its clean up"
+    sleep 30
 
     script=$(mktemp)
     kubectl get svc,pod,ep,cm,endpointslice,pdb,fqdnnetworkpolicy,netpol,secret,pvc,sts,postgresql -n pg-nais-verification | grep {{ include "postgres-image.testname" . }} | awk '{print "kubectl delete -n pg-nais-verification " $1}' >> "${script}"
