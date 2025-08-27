@@ -1,0 +1,33 @@
+diff --git a/postgres-appliance/build_scripts/base.sh b/postgres-appliance/build_scripts/base.sh
+index ff885c5..5059351 100644
+--- a/postgres-appliance/build_scripts/base.sh
++++ b/postgres-appliance/build_scripts/base.sh
+@@ -64,6 +64,7 @@ apt-get install -y \
+     brotli \
+     libbrotli1 \
+     python3.10 \
++    python3-pip \
+     python3-psycopg2
+ 
+ # forbid creation of a main cluster when package is installed
+@@ -180,6 +181,12 @@ if [ "$DEMO" != "true" ]; then
+     done
+ fi
+ 
++pip3 install pgxnclient
++for version in $DEB_PG_SUPPORTED_VERSIONS; do
++  USE_PGXS=1 pgxn install --pg_config="/usr/lib/postgresql/${version}/bin/pg_config" pg_stat_monitor
++done
++pip3 uninstall --yes pgxnclient
++
+ # make it possible for cron to work without root
+ gcc -s -shared -fPIC -o /usr/local/lib/cron_unprivileged.so cron_unprivileged.c
+ 
+@@ -198,6 +205,7 @@ apt-get purge -y \
+                 postgresql \
+                 postgresql-all \
+                 postgresql-server-dev-* \
++                python3-pip \
+                 libpq-dev=* \
+                 libmagic1 \
+                 bsdmainutils
