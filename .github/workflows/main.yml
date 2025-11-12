@@ -27,14 +27,17 @@ jobs:
       RUNNERIMG_IDENTITY: "keyless@distroless.iam.gserviceaccount.com"
       RUNNERIMG_ISSUER: "https://accounts.google.com"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # ratchet:actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # ratchet:actions/checkout@v4
         with:
           repository: zalando/spilo
           fetch-depth: '0'
           fetch-tags: 'true'
-      - name: Find latest tag
+          path: spilo
+      - name: Checkout latest tag
         shell: bash
         run: |
+          cd spilo || exit 1
           wanted_tag=$(git tag --list --sort=committerdate | tail -n 1)
           echo "Selected tag ${wanted_tag}"
           if [[ -z "$wanted_tag" ]]; then
@@ -46,6 +49,14 @@ jobs:
             exit 2
           fi
           git checkout "$wanted_tag"
+      - name: Apply patches
+        shell: bash
+        run: |
+          patch_dir=${PWD}/patches
+          cd spilo || exit 1
+          for p in ${patch_dir}/*.patch; do
+            patch -p1 < "${p}"
+          done
       - name: Install cosign
         uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62 # ratchet:sigstore/cosign-installer@v3.10.0
         with:
@@ -56,8 +67,8 @@ jobs:
         id: build-push-sign
         with:
           name: postgres-image
-          context: postgres-appliance
-          dockerfile: postgres-appliance/Dockerfile
+          context: spilo/postgres-appliance
+          dockerfile: spilo/postgres-appliance/Dockerfile
           build_args: |
             ADDITIONAL_LOCALES=nb_NO
             TIMESCALEDB_APACHE_ONLY=false
