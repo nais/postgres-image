@@ -1,3 +1,4 @@
+{{- if .Values.run_tests }}
 ---
 apiVersion: networking.gke.io/v1alpha3
 kind: FQDNNetworkPolicy
@@ -31,3 +32,4 @@ spec:
       app: app
   policyTypes:
   - Egress
+{{- end }}

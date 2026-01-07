@@ -13,3 +13,7 @@ values:
   project_id:
     computed:
       template: "{{ .Env.project_id }}"
+  run_tests:
+    computed:
+      template: |
+        {{eq .Tenant.Name "ci-nais" }}
