@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 
 project_id: "" # Mapped by fasit
+run_tests: true # Mapped by fasit
 
 image:
   repository: europe-north1-docker.pkg.dev/nais-io/nais/images/postgres-image

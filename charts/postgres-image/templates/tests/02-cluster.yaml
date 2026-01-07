@@ -1,3 +1,4 @@
+{{- if .Values.run_tests }}
 ---
 apiVersion: "acid.zalan.do/v1"
 kind: postgresql
@@ -35,3 +36,4 @@ spec:
       memory: "4Gi"
   postgresql:
     version: "17"
+{{- end }}
