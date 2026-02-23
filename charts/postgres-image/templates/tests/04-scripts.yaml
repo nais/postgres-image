@@ -38,8 +38,8 @@ data:
     sleep 30
 
     script=$(mktemp)
-    kubectl get svc,pod,ep,cm,endpointslice,pdb,fqdnnetworkpolicy,netpol,secret,pvc,sts,postgresql -n pg-nais-verification | grep {{ include "postgres-image.testname" . }} | awk '{print "kubectl delete -n pg-nais-verification " $1}' >> "${script}"
-    kubectl get job,pod,cm,fqdnnetworkpolicy,netpol,secret -n nais-verification | grep {{ include "postgres-image.testname" . }} | grep -v cleanup | awk '{print "kubectl delete -n nais-verification " $1}' >> "${script}"
+    kubectl get sts,deploy,svc,pod,ep,cm,endpointslice,pdb,netpol,secret,pvc,postgresql -n pg-nais-verification | grep {{ include "postgres-image.testname" . }} | awk '{print "kubectl delete -n pg-nais-verification " $1}' >> "${script}"
+    kubectl get job,pod,cm,netpol,secret -n nais-verification | grep {{ include "postgres-image.testname" . }} | grep -v cleanup | awk '{print "kubectl delete -n nais-verification " $1}' >> "${script}"
     chmod +x "${script}"
     echo "Running cleanup script"
     cat "${script}"
