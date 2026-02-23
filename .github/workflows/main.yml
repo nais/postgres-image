@@ -34,29 +34,11 @@ jobs:
           fetch-depth: '0'
           fetch-tags: 'true'
           path: spilo
+      - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
       - name: Checkout latest tag
-        shell: bash
-        run: |
-          cd spilo || exit 1
-          wanted_tag=$(git tag --list --sort=committerdate | tail -n 1)
-          echo "Selected tag ${wanted_tag}"
-          if [[ -z "$wanted_tag" ]]; then
-            echo "No tags found"
-            exit 1
-          fi
-          if [[ "$wanted_tag" != 4* ]]; then
-            echo "Wanted tag is not a 4.x version, check release notes and update this test to accept new major version!"
-            exit 2
-          fi
-          git checkout "$wanted_tag"
+        run: mise run checkout-spilo-tag
       - name: Apply patches
-        shell: bash
-        run: |
-          patch_dir=${PWD}/patches
-          cd spilo || exit 1
-          for p in ${patch_dir}/*.patch; do
-            patch -p1 < "${p}"
-          done
+        run: mise run apply-patches
       - name: Install cosign
         uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62 # ratchet:sigstore/cosign-installer@v3.10.0
         with:

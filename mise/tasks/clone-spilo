@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+# [MISE] description="Clone spilo to the spilo directory. Used locally."
+# [MISE] outputs=["spilo"]
+
+git clone git@github.com:zalando/spilo.git

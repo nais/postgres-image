@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+# [MISE] description="Checkout the newest tag on selected version"
+# [MISE] dir="spilo"
+
+wanted_tag=$(git tag --list --sort=committerdate | grep "${SPILO_VERSION}"  | tail -n 1)
+echo "Selected tag ${wanted_tag}"
+if [[ -z "$wanted_tag" ]]; then
+  echo "No tags found"
+  exit 1
+fi
+git checkout "$wanted_tag"

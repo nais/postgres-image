@@ -1,0 +1,17 @@
+#!/usr/bin/bash
+# [MISE] description="Apply patches defined in patches directory"
+# [MISE] dir="spilo"
+
+patch_dir=${MISE_CONFIG_ROOT}/patches
+
+# Set nullglob so the for loop does nothing if there are no patches
+nullglob_set=$(shopt -p nullglob)
+shopt -s nullglob
+
+# Apply all patches
+for p in "${patch_dir}"/*.patch; do
+  patch -p1 < "${p}"
+done
+
+# Restore previous nullglob value
+eval "${nullglob_set}"
